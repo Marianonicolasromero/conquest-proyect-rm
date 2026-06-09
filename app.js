@@ -784,7 +784,34 @@
     // Header
     const lbl = document.createElement('div');
     lbl.className = 'view-section-header';
-    lbl.innerHTML = `<span class="view-section-label">${activeEntity?.name || scope} — ${getMonthLabel()}</span>`;
+
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      const entitiesOfScope = state.entities.filter(e => e.type === scope);
+      let optionsHTML = '';
+      entitiesOfScope.forEach(ent => {
+        optionsHTML += `<option value="${ent.id}" ${ent.id === activeEntityId ? 'selected' : ''}>${ent.name}</option>`;
+      });
+
+      lbl.innerHTML = `
+        <div class="mobile-scope-header-wrap">
+          <div class="mobile-entity-selector-wrap">
+            <span class="mobile-entity-label" id="mobile-entity-label-text">${activeEntity?.name || scope}</span>
+            <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+            <select class="mobile-entity-select" id="mobile-entity-select">
+              ${optionsHTML}
+            </select>
+          </div>
+          <button class="btn-rename-entity-mobile" id="btn-rename-entity-mobile" title="Renombrar cuenta">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <span class="view-section-date-separator">•</span>
+          <span class="view-section-date-label">${getMonthLabel()}</span>
+        </div>
+      `;
+    } else {
+      lbl.innerHTML = `<span class="view-section-label">${activeEntity?.name || scope} — ${getMonthLabel()}</span>`;
+    }
     html.appendChild(lbl);
 
     // Controls
@@ -841,8 +868,6 @@
     donutSec.appendChild(donutCont);
     rightCol.appendChild(donutSec);
 
-
-
     const barSec = document.createElement('div');
     barSec.className = 'chart-section';
     barSec.innerHTML = `<div class="chart-header"><span class="chart-title">Ingresos vs Gastos — 6 meses</span></div>`;
@@ -856,6 +881,24 @@
     split.appendChild(rightCol);
     html.appendChild(split);
     container.appendChild(html);
+
+    // Wire mobile account switcher listeners if rendered
+    if (isMobile) {
+      const selectEl = html.querySelector('#mobile-entity-select');
+      selectEl?.addEventListener('change', e => {
+        state.activeEntityId[scope] = e.target.value;
+        renderView();
+        updateDropdownMenus();
+      });
+
+      const renameBtn = html.querySelector('#btn-rename-entity-mobile');
+      renameBtn?.addEventListener('click', () => {
+        const newName = prompt('Renombrar cuenta:', activeEntity?.name || '');
+        if (newName && newName.trim()) {
+          renameEntity(activeEntityId, newName.trim());
+        }
+      });
+    }
 
     renderScopeTable(scope);
     renderScopeCharts(scope);
@@ -2092,14 +2135,6 @@
       btn.addEventListener('click', () => {
         if (navigator.vibrate) navigator.vibrate(4);
         const view = btn.dataset.view;
-        // For Negocio and Personal, pick the first entity of each type if needed
-        if (view === 'negocio') {
-          const firstNeg = state.entities.find(e => e.type === 'negocio');
-          if (firstNeg) state.activeEntityId.negocio = firstNeg.id;
-        } else if (view === 'personal') {
-          const firstPer = state.entities.find(e => e.type === 'personal');
-          if (firstPer) state.activeEntityId.personal = firstPer.id;
-        }
         navigate(view);
       });
     });
