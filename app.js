@@ -743,33 +743,79 @@
       return;
     }
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'table-container';
-    wrapper.innerHTML = `
-      <table class="data-table">
-        <thead><tr>
-          <th>Fecha</th><th>Tipo</th><th>Categoría</th>
-          <th class="col-desc">Descripción</th><th>Cuenta</th>
-          <th class="col-medio">Medio</th><th>Monto</th>
-        </tr></thead>
-        <tbody id="general-tbody"></tbody>
-      </table>`;
-    container.appendChild(wrapper);
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      const listWrapper = document.createElement('div');
+      listWrapper.className = 'mobile-tx-list';
+      
+      txs.forEach(t => {
+        const entityName = (state.entities.find(e => e.id === t.entityId) || {}).name || (t.scope === 'negocio' ? 'Negocio' : 'Personal');
+        const item = document.createElement('div');
+        item.className = 'mobile-tx-item';
+        item.innerHTML = `
+          <div class="mobile-tx-left">
+            <div class="mobile-tx-icon ${t.type}">${t.type === 'ingreso' ? '↑' : '↓'}</div>
+          </div>
+          <div class="mobile-tx-middle">
+            <div class="mobile-tx-category">${t.category}</div>
+            <div class="mobile-tx-meta">
+              <span>${formatDateShort(t.date)}</span>
+              <span class="meta-dot">•</span>
+              <span>${t.medium === 'efectivo' ? '💵 Ef.' : '💳 Virt.'}</span>
+              <span class="meta-dot">•</span>
+              <span>${entityName}</span>
+            </div>
+          </div>
+          <div class="mobile-tx-right">
+            <div class="mobile-tx-amount ${t.type === 'ingreso' ? 'income' : 'expense'}">
+              ${t.type === 'ingreso' ? '+' : '-'}${formatCurrency(t.amount, t.currency)}
+            </div>
+            <div style="font-size:0.62rem;color:var(--text-muted)">Tocar para ver descripción</div>
+          </div>
+          <div class="mobile-tx-details hidden">
+            <div class="details-inner">
+              <div class="details-row"><strong>Detalle:</strong> <span>${t.description || 'Sin descripción'}</span></div>
+              <div class="details-row"><strong>Cuenta:</strong> <span>${t.scope === 'negocio' ? 'Negocio' : 'Personal'} (${entityName})</span></div>
+            </div>
+          </div>`;
 
-    const tbody = document.getElementById('general-tbody');
-    txs.forEach(t => {
-      const entityName = (state.entities.find(e => e.id === t.entityId) || {}).name || (t.scope === 'negocio' ? 'Negocio' : 'Personal');
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${formatDate(t.date)}</td>
-        <td><span class="badge badge-${t.type}">${t.type === 'ingreso' ? 'Ingreso' : 'Gasto'}</span></td>
-        <td style="color:var(--text-primary);font-weight:500">${t.category}</td>
-        <td class="col-desc">${t.description || '—'}</td>
-        <td style="color:var(--text-muted);font-size:0.78rem">${entityName}</td>
-        <td class="col-medio"><span class="badge badge-${t.medium}">${t.medium === 'efectivo' ? 'Efectivo' : 'Virtual'}</span></td>
-        <td class="col-amount ${t.type === 'ingreso' ? 'income' : 'expense'}">${t.type === 'ingreso' ? '+' : '-'}${formatCurrency(t.amount, t.currency)}</td>`;
-      tbody.appendChild(tr);
-    });
+        item.addEventListener('click', () => {
+          const details = item.querySelector('.mobile-tx-details');
+          details.classList.toggle('hidden');
+          item.classList.toggle('expanded');
+        });
+        listWrapper.appendChild(item);
+      });
+      container.appendChild(listWrapper);
+    } else {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table-container';
+      wrapper.innerHTML = `
+        <table class="data-table">
+          <thead><tr>
+            <th>Fecha</th><th>Tipo</th><th>Categoría</th>
+            <th class="col-desc">Descripción</th><th>Cuenta</th>
+            <th class="col-medio">Medio</th><th>Monto</th>
+          </tr></thead>
+          <tbody id="general-tbody"></tbody>
+        </table>`;
+      container.appendChild(wrapper);
+
+      const tbody = document.getElementById('general-tbody');
+      txs.forEach(t => {
+        const entityName = (state.entities.find(e => e.id === t.entityId) || {}).name || (t.scope === 'negocio' ? 'Negocio' : 'Personal');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${formatDate(t.date)}</td>
+          <td><span class="badge badge-${t.type}">${t.type === 'ingreso' ? 'Ingreso' : 'Gasto'}</span></td>
+          <td style="color:var(--text-primary);font-weight:500">${t.category}</td>
+          <td class="col-desc">${t.description || '—'}</td>
+          <td style="color:var(--text-muted);font-size:0.78rem">${entityName}</td>
+          <td class="col-medio"><span class="badge badge-${t.medium}">${t.medium === 'efectivo' ? 'Efectivo' : 'Virtual'}</span></td>
+          <td class="col-amount ${t.type === 'ingreso' ? 'income' : 'expense'}">${t.type === 'ingreso' ? '+' : '-'}${formatCurrency(t.amount, t.currency)}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
   }
 
   // ─── Scope View (Negocio / Personal) ───
@@ -951,42 +997,101 @@
       return;
     }
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'table-container';
-    wrapper.innerHTML = `
-      <table class="data-table">
-        <thead><tr>
-          <th>Fecha</th><th>Tipo</th><th>Categoría</th>
-          <th class="col-desc">Descripción</th><th class="col-medio">Medio</th>
-          <th>Monto</th><th class="col-actions"></th>
-        </tr></thead>
-        <tbody id="scope-tbody"></tbody>
-      </table>`;
-    tableSection.appendChild(wrapper);
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      const listWrapper = document.createElement('div');
+      listWrapper.className = 'mobile-tx-list';
 
-    const tbody = document.getElementById('scope-tbody');
-    txs.forEach(t => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${formatDate(t.date)}</td>
-        <td><span class="badge badge-${t.type}">${t.type === 'ingreso' ? 'Ingreso' : 'Gasto'}</span></td>
-        <td style="color:var(--text-primary);font-weight:500">${t.category}</td>
-        <td class="col-desc">${t.description || '—'}</td>
-        <td class="col-medio"><span class="badge badge-${t.medium}">${t.medium === 'efectivo' ? 'Efectivo' : 'Virtual'}</span></td>
-        <td class="col-amount ${t.type === 'ingreso' ? 'income' : 'expense'}">${t.type === 'ingreso' ? '+' : '-'}${formatCurrency(t.amount, t.currency)}</td>
-        <td class="col-actions">
-          <button class="btn-icon btn-edit" data-id="${t.id}" title="Editar">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="btn-icon btn-delete" data-id="${t.id}" title="Eliminar">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          </button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
+      txs.forEach(t => {
+        const entityName = (state.entities.find(e => e.id === t.entityId) || {}).name || (t.scope === 'negocio' ? 'Negocio' : 'Personal');
+        const item = document.createElement('div');
+        item.className = 'mobile-tx-item';
+        item.innerHTML = `
+          <div class="mobile-tx-left">
+            <div class="mobile-tx-icon ${t.type}">${t.type === 'ingreso' ? '↑' : '↓'}</div>
+          </div>
+          <div class="mobile-tx-middle">
+            <div class="mobile-tx-category">${t.category}</div>
+            <div class="mobile-tx-meta">
+              <span>${formatDateShort(t.date)}</span>
+              <span class="meta-dot">•</span>
+              <span>${t.medium === 'efectivo' ? '💵 Ef.' : '💳 Virt.'}</span>
+            </div>
+          </div>
+          <div class="mobile-tx-right">
+            <div class="mobile-tx-amount ${t.type === 'ingreso' ? 'income' : 'expense'}">
+              ${t.type === 'ingreso' ? '+' : '-'}${formatCurrency(t.amount, t.currency)}
+            </div>
+            <div class="mobile-tx-actions">
+              <button class="btn-icon btn-edit" data-id="${t.id}" title="Editar" style="padding:4px 8px;min-height:28px !important;min-width:28px !important;height:28px;width:auto;font-size:0.75rem;border-radius:6px;border:1px solid var(--border);cursor:pointer;color:var(--text-secondary);display:inline-flex;align-items:center;justify-content:center;">✏️</button>
+              <button class="btn-icon btn-delete" data-id="${t.id}" title="Eliminar" style="padding:4px 8px;min-height:28px !important;min-width:28px !important;height:28px;width:auto;font-size:0.75rem;border-radius:6px;border:1px solid var(--border);cursor:pointer;color:var(--text-secondary);display:inline-flex;align-items:center;justify-content:center;">🗑️</button>
+            </div>
+          </div>
+          <div class="mobile-tx-details hidden">
+            <div class="details-inner">
+              <div class="details-row"><strong>Detalle:</strong> <span>${t.description || 'Sin descripción'}</span></div>
+              <div class="details-row"><strong>Ámbito:</strong> <span>${t.scope === 'negocio' ? 'Negocio' : 'Personal'} (${entityName})</span></div>
+            </div>
+          </div>`;
 
-    tbody.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.id)));
-    tbody.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', () => confirmDelete(btn.dataset.id)));
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.btn-edit') || e.target.closest('.btn-delete')) return;
+          const details = item.querySelector('.mobile-tx-details');
+          details.classList.toggle('hidden');
+          item.classList.toggle('expanded');
+        });
+
+        // Bind buttons
+        item.querySelector('.btn-edit').addEventListener('click', (e) => {
+          e.stopPropagation();
+          openModal(t.id);
+        });
+        item.querySelector('.btn-delete').addEventListener('click', (e) => {
+          e.stopPropagation();
+          confirmDelete(t.id);
+        });
+
+        listWrapper.appendChild(item);
+      });
+      tableSection.appendChild(listWrapper);
+    } else {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table-container';
+      wrapper.innerHTML = `
+        <table class="data-table">
+          <thead><tr>
+            <th>Fecha</th><th>Tipo</th><th>Categoría</th>
+            <th class="col-desc">Descripción</th><th class="col-medio">Medio</th>
+            <th>Monto</th><th class="col-actions"></th>
+          </tr></thead>
+          <tbody id="scope-tbody"></tbody>
+        </table>`;
+      tableSection.appendChild(wrapper);
+
+      const tbody = document.getElementById('scope-tbody');
+      txs.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${formatDate(t.date)}</td>
+          <td><span class="badge badge-${t.type}">${t.type === 'ingreso' ? 'Ingreso' : 'Gasto'}</span></td>
+          <td style="color:var(--text-primary);font-weight:500">${t.category}</td>
+          <td class="col-desc">${t.description || '—'}</td>
+          <td class="col-medio"><span class="badge badge-${t.medium}">${t.medium === 'efectivo' ? 'Efectivo' : 'Virtual'}</span></td>
+          <td class="col-amount ${t.type === 'ingreso' ? 'income' : 'expense'}">${t.type === 'ingreso' ? '+' : '-'}${formatCurrency(t.amount, t.currency)}</td>
+          <td class="col-actions">
+            <button class="btn-icon btn-edit" data-id="${t.id}" title="Editar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn-icon btn-delete" data-id="${t.id}" title="Eliminar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.id)));
+      tbody.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', () => confirmDelete(btn.dataset.id)));
+    }
   }
 
   function setupScopeListeners(scope) {
