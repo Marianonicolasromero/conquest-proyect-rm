@@ -2120,6 +2120,15 @@
     const btnTheme = document.getElementById('btn-theme');
     if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
 
+    // Settings toggle
+    const btnSettings = document.getElementById('btn-settings-header');
+    if (btnSettings) {
+      btnSettings.addEventListener('click', () => {
+        if (navigator.vibrate) navigator.vibrate(4);
+        navigate('ajustes');
+      });
+    }
+
     // New transaction button (desktop header)
     document.getElementById('btn-new-transaction').addEventListener('click', () => openModal());
 
