@@ -763,7 +763,7 @@
       tr.innerHTML = `
         <td>${formatDate(t.date)}</td>
         <td><span class="badge badge-${t.type}">${t.type === 'ingreso' ? 'Ingreso' : 'Gasto'}</span></td>
-        <td style="color:#fff;font-weight:500">${t.category}</td>
+        <td style="color:var(--text-primary);font-weight:500">${t.category}</td>
         <td class="col-desc">${t.description || '—'}</td>
         <td style="color:var(--text-muted);font-size:0.78rem">${entityName}</td>
         <td class="col-medio"><span class="badge badge-${t.medium}">${t.medium === 'efectivo' ? 'Efectivo' : 'Virtual'}</span></td>
@@ -970,7 +970,7 @@
       tr.innerHTML = `
         <td>${formatDate(t.date)}</td>
         <td><span class="badge badge-${t.type}">${t.type === 'ingreso' ? 'Ingreso' : 'Gasto'}</span></td>
-        <td style="color:#fff;font-weight:500">${t.category}</td>
+        <td style="color:var(--text-primary);font-weight:500">${t.category}</td>
         <td class="col-desc">${t.description || '—'}</td>
         <td class="col-medio"><span class="badge badge-${t.medium}">${t.medium === 'efectivo' ? 'Efectivo' : 'Virtual'}</span></td>
         <td class="col-amount ${t.type === 'ingreso' ? 'income' : 'expense'}">${t.type === 'ingreso' ? '+' : '-'}${formatCurrency(t.amount, t.currency)}</td>
@@ -1237,7 +1237,7 @@
     statsSection.className = 'settings-section';
     statsSection.innerHTML = `
       <div class="settings-section-title">Estadísticas</div>
-      <div class="settings-item"><div class="settings-item-info"><span class="settings-item-label">Total de movimientos</span></div><span style="color:#fff;font-weight:600">${totalTx}</span></div>
+      <div class="settings-item"><div class="settings-item-info"><span class="settings-item-label">Total de movimientos</span></div><span style="color:var(--text-primary);font-weight:600">${totalTx}</span></div>
       <div class="settings-item"><div class="settings-item-info"><span class="settings-item-label">Ingresos registrados</span></div><span style="color:var(--income);font-weight:600">${totalIncome}</span></div>
       <div class="settings-item"><div class="settings-item-info"><span class="settings-item-label">Gastos registrados</span></div><span style="color:var(--expense);font-weight:600">${totalExpense}</span></div>`;
     html.appendChild(statsSection);
@@ -1305,7 +1305,7 @@
         item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;background:var(--bg-base);';
         const label = document.createElement('span');
         label.textContent = cat;
-        label.style.cssText = 'font-size:0.87rem;color:#fff;flex:1;';
+        label.style.cssText = 'font-size:0.87rem;color:var(--text-primary);flex:1;';
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'btn-icon';
         deleteBtn.style.cssText = 'width:24px;height:24px;color:var(--text-muted);';

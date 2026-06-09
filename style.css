@@ -1363,6 +1363,11 @@ html.light-mode .ticker-net-pill.positive .ticker-net-value.income {
 }
 .btn-theme svg { flex-shrink: 0; }
 
+.nav-actions-wrap {
+  display: flex;
+  align-items: center;
+}
+
 /* ============================================================
    BACKGROUND WATERMARK
    ============================================================ */
